@@ -1,7 +1,7 @@
 import React from 'react'
 import Switch from 'react-router/Switch'
 import Route from 'react-router/Route'
-import Redirect from 'react-router/Redirect';
+import Redirect from 'react-router/Redirect'
 
 const renderRoutes = (routes, extraProps = {}, switchProps = {}) => routes ? (
   <Switch {...switchProps}>

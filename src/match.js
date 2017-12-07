@@ -137,4 +137,5 @@ const routes = [].concat(
     notFound404Route,
 )
 
-console.log('\nmatch: ', match(routes, '/legalinfo/termsandconditions/nice'), '\n')
+// console.log('\nmatch: ', match(routes, '/legalinfo/termsandconditions/nice'), '\n')
+// console.log('\nmatch: ', match(routes, '/vehicle/finance'), '\n')
