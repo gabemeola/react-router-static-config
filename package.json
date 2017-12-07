@@ -1,6 +1,6 @@
 {
   "name": "react-router-static-config-pre",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Static route config matching for React Router",
   "repository": "gabemeola/react-router-static-config",
   "license": "MIT",
@@ -12,6 +12,8 @@
     "index.js",
     "matchRoutes.js",
     "renderRoutes.js",
+    "match.js",
+    "createRoutes.js",
     "umd"
   ],
   "main": "index.js",
