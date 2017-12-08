@@ -1,6 +1,6 @@
 {
   "name": "react-router-static-config",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "description": "Static route config matching for React Router",
   "repository": "gabemeola/react-router-static-config",
   "license": "MIT",
@@ -19,7 +19,7 @@
   "scripts": {
     "build": "node ./tools/build.js",
     "watch": "babel ./src -d . --ignore __tests__ --watch",
-    "prepublishOnly": "yarn lint --fix && yarn test && node ./tools/build.js",
+    "prepublishOnly": "yarn lint --fix && node ./tools/build.js",
     "clean": "git clean -fdX .",
     "lint": "eslint src",
     "test": "jest"
