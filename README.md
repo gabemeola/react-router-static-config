@@ -1,35 +1,33 @@
-# React Router Config
+# React Router Static Config
 
 Static route configuration helpers for React Router.
 
-This is alpha software, it needs:
-
-1. Realistic server rendering example with data preloading
-2. Pending navigation example
+This is a fork off [react-router-config](https://www.npmjs.com/package/react-router-config) with support for partially applied routes (you get to keep your code splitting support) and static switch matching.
 
 ## Installation
 
 Using [npm](https://www.npmjs.com/):
 
-    $ npm install --save react-router-config
+	$ npm install --save react-router-static-config
 
 Then with a module bundler like [webpack](https://webpack.github.io/), use as you would anything else:
 
 ```js
-// using an ES6 transpiler, like babel
-import { matchRoutes, renderRoutes } from 'react-router-config'
+import { matchRoutes, createPartialRoutes } from 'react-router-static-config'
 
-// not using an ES6 transpiler
-var matchRoutes = require('react-router-config').matchRoutes
+/* OR */
+
+import matchRoutes from 'react-router-static-config/matchRoutes'
+import createPartialRoutes from 'react-router-static-config/createPartialRoutes'
 ```
 
 The UMD build is also available on [unpkg](https://unpkg.com):
 
 ```html
-<script src="https://unpkg.com/react-router-config/umd/react-router-config.min.js"></script>
+<script src="https://unpkg.com/react-router-static-config/umd/react-router-static-config.min.js"></script>
 ```
 
-You can find the library on `window.ReactRouterConfig`
+You can find the library on `window.ReactRouterStaticConfig`
 
 ## Motivation
 
@@ -48,191 +46,134 @@ Routes are objects with the same properties as a `<Route>` with a couple differe
 - the only render prop it accepts is `component` (no `render` or `children`)
 - introduces the `routes` key for sub routes
 - Consumers are free to add any additional props they'd like to a route, you can access `props.route` inside the `component`, this object is a reference to the object used to render and match.
-- accepts `key` prop to prevent remounting component when transition was made from route with the same component and same `key` prop
+- The `name` is what will be used as object key when using `createPartialRoutes`.
 
 ```js
+import { matchRoutes } from 'react-router-static-config'
+
+
 const routes = [
-  { component: Root,
-    routes: [
-      { path: '/',
-        exact: true,
-        component: Home
-      },
-      { path: '/child/:id',
-        component: Child,
-        routes: [
-          { path: '/child/:id/grand-child',
-            component: GrandChild
-          }
-        ]
-      }
+  {
+	  path: '/',
+	  name: 'Home',
+	  exact: true,
+	  component: Home
+  },
+  {
+	  path: '/child/:id',
+	  name: 'Child',
+	  component: Child,
+	  routes: [
+		  {
+			  path: '/child/:id/grand-child',
+			  name: 'Grandchild',
+			  component: GrandChild
+		  }
     ]
   }
 ]
+
+
+// Matching the Child route
+matchRoutes(routes, '/child/jeff')
 ```
+
+Static-Config also supports Redirects if you provide a Redirect Object:
+
+```js
+const routes = [
+	{
+		path: '/'
+		name: 'Home',
+		component: Home,
+	},
+	{
+		path: '/oldhome'
+		redirect: {
+			to: '/'
+			push: true,
+		}
+	}
+]
+```
+
 
 **Note**: Just like `<Route>`, relative paths are not (yet) supported. When it is supported there, it will be supported here.
 
 ## API
 
-### `matchRoutes(routes, pathname)`
+### `matchRoutes(routes<object>, pathname<string>, useSwitch<bool> = true)`
 
-Returns an array of matched routes.
+Returns matched route.  
+Returns an array of matched routes if `useSwitch = false`.
 
 #### Parameters
 - routes - the route configuration
 - pathname - the [pathname](https://developer.mozilla.org/en-US/docs/Web/API/HTMLHyperlinkElementUtils/pathname) component of the url. This must be a decoded string representing the path.
+- useSwitch - If should use [`<Switch>`](https://reacttraining.com/react-router/web/api/Switch) behavior. Recurses with child routes first if they are available to find match. This means nested child routes with be matched first when using switch.
 
 ```js
-import { matchRoutes } from 'react-router-config'
-const branch = matchRoutes(routes, '/child/23')
+import { matchRoutes } from 'react-router-static-config'
+const branch = matchRoutes(routes, '/child/23', false)
 // using the routes shown earlier, this returns
 // [
 //   routes[0],
 //   routes[0].routes[1]
 // ]
+
+
+// Using matchRoute's switch
+import { matchRoutes } from 'react-router-static-config'
+
+const match = matchRoutes(routes, '/child/23/grand-child')
+
+// With switch, this returns
+// {
+//      path: '/child/:id/grand-child',
+//			name: 'Grandchild',
+//			component: GrandChild
+//  }
 ```
 
-Each item in the array contains two properties: `routes` and `match`.
 
-- `routes`: A reference to the routes array used to match
-- `match`: The match object that also gets passed to `<Route>` render methods.
+### `createPartialRoutes(routes)`
 
-```js
-branch[0].match.url
-branch[0].match.isExact
-// etc.
-```
-
-You can use this branch of routes to figure out what is going to be rendered before it actually is rendered. You could do something like this on the server before rendering, or in a lifecycle hook of a component that wraps your entire app
+In order to ensure that matching outside of render with `matchRoutes` and inside of render result in the same branch, you must use `createPartialRoutes` instead of `<Route>` inside your components. You can render a `<Route>` still, but know that it will not be accounted for in `matchRoutes` outside of render.
 
 ```js
-const loadBranchData = (location) => {
-  const branch = matchRoutes(routes, location.pathname)
+import { createPartialRoutes } from 'react-router-static-config'
 
-  const promises = branch.map(({ route, match }) => {
-    return route.loadData
-      ? route.loadData(match)
-      : Promise.resolve(null)
-  })
-
-  return Promise.all(promises)
-}
-
-// useful on the server for preloading data
-loadBranchData(req.url).then(data => {
-  putTheDataSomewhereTheClientCanFindIt(data)
-})
-
-// also useful on the client for "pending navigation" where you
-// load up all the data before rendering the next page when
-// the url changes
-
-// THIS IS JUST SOME THEORETICAL PSEUDO CODE :)
-class PendingNavDataLoader extends Component {
-  state = {
-    previousLocation: null
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const navigated = nextProps.location !== this.props.location
-    const { routes } = this.props
-
-    if (navigated) {
-      // save the location so we can render the old screen
-      this.setState({
-        previousLocation: this.props.location
-      })
-
-      // load data while the old screen remains
-      loadNextData(routes, nextProps.location).then((data) => {
-        putTheDataSomewhereRoutesCanFindIt(data)
-        // clear previousLocation so the next screen renders
-        this.setState({
-          previousLocation: null
-        })
-      })
-    }
-  }
-
-  render() {
-    const { children, location } = this.props
-    const { previousLocation } = this.state
-
-    // use a controlled <Route> to trick all descendants into
-    // rendering the old location
-    return (
-      <Route
-        location={previousLocation || location}
-        render={() => children}
-      />
-    )
-  }
-}
-
-// wrap in withRouter
-export default withRouter(PendingNavDataLoader)
-
-/////////////
-// somewhere at the top of your app
-import routes from './routes'
-
-<BrowserRouter>
-  <PendingNavDataLoader routes={routes}>
-    {renderRoutes(routes)}
-  </PendingNavDataLoader>
-</BrowserRouter>
-```
-
-Again, that's all pseudo-code. There are a lot of ways to do server rendering with data and pending navigation and we haven't settled on one. The point here is that `matchRoutes` gives you a chance to match statically outside of the render lifecycle. We'd like to make a demo app of this approach eventually.
-
-### `renderRoutes(routes, extraProps = {}, switchProps = {})`
-
-In order to ensure that matching outside of render with `matchRoutes` and inside of render result in the same branch, you must use `renderRoutes` instead of `<Route>` inside your components. You can render a `<Route>` still, but know that it will not be accounted for in `matchRoutes` outside of render.
-
-```js
-import { renderRoutes } from 'react-router-config'
-
-const routes = [
-  { component: Root,
-    routes: [
-      { path: '/',
-        exact: true,
-        component: Home
-      },
-      { path: '/child/:id',
-        component: Child,
-        routes: [
-          { path: '/child/:id/grand-child',
-            component: GrandChild
-          }
-        ]
-      }
-    ]
-  }
-]
-
-const Root = ({ route }) => (
-  <div>
-    <h1>Root</h1>
-    {/* child routes won't render without this */}
-    {renderRoutes(route.routes)}
-  </div>
-)
-
-const Home = ({ route }) => (
+const Home = () => (
   <div>
     <h2>Home</h2>
   </div>
 )
 
-const Child = ({ route }) => (
-  <div>
-    <h2>Child</h2>
-    {/* child routes won't render without this */}
-    {renderRoutes(route.routes, { someProp: 'these extra props are optional' })}
-  </div>
-)
+
+// Ideally you would put this in another file
+const childRoutes = [
+  {
+    path: '/child/:id/grand-child',
+    name: 'Grandchild',
+  }
+]
+
+const routes = [
+  {
+	  path: '/',
+	  name: 'Home',
+	  exact: true,
+	  component: Home
+  },
+  {
+	  path: '/child/:id',
+	  name: 'Child',
+	  routes: childRoutes,
+  }
+]
+
+
+const partialRoutes = createPartialRoutes(routes)
 
 const GrandChild = ({ someProp }) => (
   <div>
@@ -241,11 +182,33 @@ const GrandChild = ({ someProp }) => (
   </div>
 )
 
+const Child = () => {
+    const childRoutes = createPartialRoutes(childRoutes);
+    return (
+        <div>
+          <h2>Child</h2>
+          
+          <childRoutes.GrandChild component={GrandChild} />
+        </div>
+    )
+}
+
+const Root = () => (
+  <div>
+    <h1>Root</h1>
+    
+    {/* Since we already declared our component in config we don't need to apply any more props */}
+    <partialRoutes.Home />
+    
+    <partialRoutes.Child component={Child} />
+  </div>
+)
+
 
 ReactDOM.render((
   <BrowserRouter>
     {/* kick it all off with the root route */}
-    {renderRoutes(routes)}
+    <Root />
   </BrowserRouter>
 ), document.getElementById('root'))
 
