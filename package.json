@@ -1,6 +1,6 @@
 {
   "name": "react-router-static-config",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Static route config matching for React Router",
   "repository": "gabemeola/react-router-static-config",
   "license": "MIT",
