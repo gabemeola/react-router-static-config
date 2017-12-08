@@ -37,7 +37,7 @@ exec('rollup -c -f umd -o umd/react-router-static-config.min.js', {
 })
 
 const size = gzipSize.sync(
-  fs.readFileSync('umd/react-router-config.min.js')
+  fs.readFileSync('umd/react-router-static-config.min.js')
 )
 
 console.log('\ngzipped, the UMD build is %s', prettyBytes(size))

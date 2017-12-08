@@ -141,6 +141,7 @@ const match = matchRoutes(routes, '/child/23/grand-child')
 In order to ensure that matching outside of render with `matchRoutes` and inside of render result in the same branch, you must use `createPartialRoutes` instead of `<Route>` inside your components. You can render a `<Route>` still, but know that it will not be accounted for in `matchRoutes` outside of render.
 
 ```js
+import { BrowserRouter, Switch } from 'react-router'
 import { createPartialRoutes } from 'react-router-static-config'
 
 const Home = () => (
@@ -197,10 +198,12 @@ const Root = () => (
   <div>
     <h1>Root</h1>
     
-    {/* Since we already declared our component in config we don't need to apply any more props */}
-    <partialRoutes.Home />
-    
-    <partialRoutes.Child component={Child} />
+    <Switch>
+	    {/* Since we already declared our component in config we don't need to apply any more props */}
+	    <partialRoutes.Home />
+	    
+	    <partialRoutes.Child component={Child} />
+    </Switch>
   </div>
 )
 
