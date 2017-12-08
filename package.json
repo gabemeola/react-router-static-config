@@ -1,5 +1,5 @@
 {
-  "name": "react-router-static-config-pre",
+  "name": "react-router-static-config",
   "version": "0.0.3",
   "description": "Static route config matching for React Router",
   "repository": "gabemeola/react-router-static-config",
@@ -11,19 +11,17 @@
     "es",
     "index.js",
     "matchRoutes.js",
-    "renderRoutes.js",
-    "match.js",
-    "createRoutes.js",
+    "createPartialRoutes.js",
     "umd"
   ],
   "main": "index.js",
   "module": "es/index.js",
   "scripts": {
     "build": "node ./tools/build.js",
-    "watch": "babel ./modules -d . --ignore __tests__ --watch",
-    "prepublishOnly": "node ./tools/build.js",
+    "watch": "babel ./src -d . --ignore __tests__ --watch",
+    "prepublishOnly": "yarn lint --fix && yarn test && node ./tools/build.js",
     "clean": "git clean -fdX .",
-    "lint": "eslint modules",
+    "lint": "eslint src",
     "test": "jest"
   },
   "peerDependencies": {

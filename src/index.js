@@ -1,4 +1,2 @@
-export matchRoutes from './matchRoutes'
-export renderRoutes from './renderRoutes'
-export createRoutes from './createRoutes'
-export match from './match'
+export { default as createPartialRoutes } from './createPartialRoutes'
+export { default as matchRoutes } from './matchRoutes'

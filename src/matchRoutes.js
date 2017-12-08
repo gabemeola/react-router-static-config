@@ -1,29 +1,26 @@
 import matchPath from 'react-router/matchPath'
-import Router from 'react-router/Router'
 
-// ensure we're using the exact code for default root match
-const { computeMatch } = Router.prototype
 
-const matchRoutes = (routes, pathname, /*not public API*/branch = []) => {
-  routes.some((route) => {
-    const match = route.path
-      ? matchPath(pathname, route)
-      : branch.length
-        ? branch[branch.length - 1].match // use parent match
-        : computeMatch(pathname) // use default "root" match
+export default function matchRoutes(config, pathname, shouldSwitch = true) {
+    let matches = []
 
-    if (match) {
-      branch.push({ route, match })
+    for (let i = 0; i < config.length; i++) {
+        const isMatch = matchPath(pathname, config[i])
+        // console.log(config[i].name, isMatch)
+        if (isMatch) {
+            // Look through subroutes first
+            if (config[i].routes) {
+                // console.log(`\nRoutes of: ${config[i].name}`)
+                // Add on Recursion of sub routes.
+                matches = matchRoutes(config[i].routes, pathname, false).concat(matches)
+            }
 
-      if (route.routes) {
-        matchRoutes(route.routes, pathname, branch)
-      }
+            matches.push(config[i])
+
+            // Return out if we found a match in switch mode
+            if (matches[0] && shouldSwitch) return matches[0]
+        }
     }
 
-    return match
-  })
-
-  return branch
+    return matches
 }
-
-export default matchRoutes
