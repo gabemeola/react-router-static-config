@@ -18,7 +18,8 @@ module.exports = {
   presets: [
     [ 'es2015', {
       loose: true,
-      modules: building ? false : 'commonjs'
+      modules: building ? false : 'commonjs',
+      useBuiltIns: true,
     } ],
     'stage-1',
     'react'

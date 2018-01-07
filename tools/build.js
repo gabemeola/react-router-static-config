@@ -22,14 +22,14 @@ exec('babel src -d es --ignore __tests__', {
   BABEL_ENV: 'es'
 })
 
-console.log('\nBuilding react-router-config.js ...')
+console.log('\nBuilding react-router-static-config.js ...')
 
 exec('rollup -c -f umd -o umd/react-router-static-config.js', {
   BABEL_ENV: 'umd',
   NODE_ENV: 'development'
 })
 
-console.log('\nBuilding react-router.min.js ...')
+console.log('\nBuilding react-router-static-config.min.js ...')
 
 exec('rollup -c -f umd -o umd/react-router-static-config.min.js', {
   BABEL_ENV: 'umd',

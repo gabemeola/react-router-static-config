@@ -5,28 +5,43 @@ import Redirect from 'react-router/Redirect'
 
 function createPartial(route) {
     if (route.redirect == null) {
-        return class extends Redirect {
-            static defaultProps = {
+        // return class extends Redirect {
+        //     static defaultProps = {
+        //         exact: route.exact,
+        //         strict: route.strict,
+        //         push: route.redirect.push,
+        //         from: route.redirect.from || route.path,
+        //         to: route.redirect.to,
+        //     }
+        // }
+
+        // eslint-disable-next-line no-inner-declarations
+        function PartialRedirect(props) {
+            const passProps = Object.assign({
                 exact: route.exact,
                 strict: route.strict,
                 push: route.redirect.push,
                 from: route.redirect.from || route.path,
                 to: route.redirect.to,
-            }
+            }, props)
+
+            return React.createElement(Redirect, passProps)
         }
+        PartialRedirect.propTypes = Redirect.propTypes
+
+        return PartialRedirect
     }
 
     function PartialRoute({ component: Comp, render: renderFunc, ...props }) {
-        return <Route
-            {...props}
-            render={(props) => {
-                const passProps = { ...props, routes: route.routes }
+        return React.createElement(Route, Object.assign({}, props, {
+            render(props) {
+                const passProps = Object.assign({ routes: route.routes }, props)
 
                 return typeof renderFunc !== 'undefined'
                     ? renderFunc(passProps)
-                    : <Comp {...passProps} />
-            }}
-        />
+                    : React.createElement(Comp, passProps)
+            }
+        }))
     }
     PartialRoute.defaultProps = {
         path: route.path,
@@ -34,6 +49,7 @@ function createPartial(route) {
         strict: route.strict,
         component: route.component,
     }
+    PartialRoute.propTypes = Route.propTypes
 
     return PartialRoute
 }
