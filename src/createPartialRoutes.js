@@ -45,7 +45,7 @@ export default function createPartialRoutes(routes) {
 
     for (let i = 0; i < routes.length; i++) {
         const route = routes[i]
-        partialRoutes[route.name || route.path] = createPartial(route)
+        partialRoutes[route.name || route.path || route.redirect.from] = createPartial(route)
     }
 
     return partialRoutes
